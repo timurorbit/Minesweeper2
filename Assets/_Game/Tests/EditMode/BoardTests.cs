@@ -13,7 +13,7 @@ namespace Minesweeper.Tests
         public void AdjacentMines_AreCountedAroundTheMine()
         {
             var board = BoardWithMineAtOrigin();
-            board.Reveal(new Coordinate(2, 2)); // first reveal triggers placement + adjacency
+            board.Reveal(new Coordinate(2, 2));
 
             Assert.AreEqual(1, board.CellAt(new Coordinate(1, 0)).AdjacentMines);
             Assert.AreEqual(1, board.CellAt(new Coordinate(0, 1)).AdjacentMines);
@@ -25,9 +25,9 @@ namespace Minesweeper.Tests
         public void RevealingNumberedCell_RevealsOnlyThatCell()
         {
             var board = BoardWithMineAtOrigin();
-            var revealed = board.Reveal(new Coordinate(1, 0)); // touches the mine -> "1"
+            var result = board.Reveal(new Coordinate(1, 0));
 
-            Assert.AreEqual(1, revealed.Count);
+            Assert.AreEqual(1, result.Revealed.Count);
             Assert.AreEqual(CellState.Revealed, board.CellAt(new Coordinate(1, 0)).State);
         }
 
@@ -35,25 +35,25 @@ namespace Minesweeper.Tests
         public void RevealingEmptyCell_FloodsAcrossZeroAdjacentRegion()
         {
             var board = BoardWithMineAtOrigin();
-            var revealed = board.Reveal(new Coordinate(2, 2)); // empty corner
+            var result = board.Reveal(new Coordinate(2, 2));
 
-            Assert.AreEqual(8, revealed.Count); // every cell except the mine
+            Assert.AreEqual(8, result.Revealed.Count);
         }
 
         [Test]
-        public void RevealingMine_LosesTheGame()
+        public void RevealingMine_ReportsHitMine()
         {
             var board = BoardWithMineAtOrigin();
-            board.Reveal(new Coordinate(0, 0));
-            Assert.AreEqual(GameStatus.Lost, board.Status);
+            var result = board.Reveal(new Coordinate(0, 0));
+            Assert.IsTrue(result.HitMine);
         }
 
         [Test]
-        public void RevealingAllSafeCells_WinsTheGame()
+        public void RevealingAllSafeCells_ReportsCleared()
         {
             var board = BoardWithMineAtOrigin();
-            board.Reveal(new Coordinate(2, 2)); // floods all 8 safe cells
-            Assert.AreEqual(GameStatus.Won, board.Status);
+            var result = board.Reveal(new Coordinate(2, 2));
+            Assert.IsTrue(result.Cleared);
         }
 
         [Test]
@@ -63,8 +63,8 @@ namespace Minesweeper.Tests
             for (int seed = 0; seed < 50; seed++)
             {
                 var board = new Board(9, 9, 80, new RandomMinePlacer(new SystemRandom(seed)));
-                board.Reveal(first);
-                Assert.AreNotEqual(GameStatus.Lost, board.Status, $"seed {seed} lost on first click");
+                var result = board.Reveal(first);
+                Assert.IsFalse(result.HitMine, $"seed {seed} hit a mine on first click");
                 Assert.IsFalse(board.CellAt(first).IsMine, $"seed {seed} put a mine under first click");
             }
         }
@@ -76,8 +76,8 @@ namespace Minesweeper.Tests
             var target = new Coordinate(1, 0);
             board.ToggleFlag(target);
 
-            var revealed = board.Reveal(target);
-            Assert.AreEqual(0, revealed.Count);
+            var result = board.Reveal(target);
+            Assert.AreEqual(0, result.Revealed.Count);
             Assert.AreEqual(CellState.Flagged, board.CellAt(target).State);
         }
 

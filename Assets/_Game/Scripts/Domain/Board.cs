@@ -2,8 +2,6 @@ using System.Collections.Generic;
 
 namespace Minesweeper.Domain
 {
-    public enum GameStatus { InProgress, Won, Lost }
-
     public sealed class Board
     {
         private readonly Cell[,] cells;
@@ -15,7 +13,6 @@ namespace Minesweeper.Domain
 
         public int Width { get; }
         public int Height { get; }
-        public GameStatus Status { get; private set; } = GameStatus.InProgress;
 
         public Board(int width, int height, int mineCount, IMinePlacer minePlacer)
         {
@@ -34,14 +31,28 @@ namespace Minesweeper.Domain
 
         public bool InBounds(Coordinate c) => c.X >= 0 && c.X < Width && c.Y >= 0 && c.Y < Height;
 
-        /// <summary>Reveals a cell (placing mines on the first reveal) and returns every cell newly opened.</summary>
-        public IReadOnlyList<Coordinate> Reveal(Coordinate origin)
+        /// <summary>Returns the board to a fresh, unrevealed state (mines re-placed on the next reveal).</summary>
+        public void Reset()
+        {
+            for (int y = 0; y < Height; y++)
+            for (int x = 0; x < Width; x++)
+            {
+                var cell = cells[x, y];
+                cell.IsMine = false;
+                cell.AdjacentMines = 0;
+                cell.State = CellState.Hidden;
+            }
+            minesPlaced = false;
+            safeRevealed = 0;
+            safeTotal = 0;
+        }
+
+        /// <summary>Reveals a cell (placing mines on the first reveal) and reports what happened.</summary>
+        public RevealResult Reveal(Coordinate origin)
         {
             var revealed = new List<Coordinate>();
-            if (Status != GameStatus.InProgress || !InBounds(origin))
-                return revealed;
-            if (CellAt(origin).State != CellState.Hidden)
-                return revealed;
+            if (!InBounds(origin) || CellAt(origin).State != CellState.Hidden)
+                return new RevealResult(revealed, hitMine: false, cleared: false);
 
             if (!minesPlaced)
                 PlaceMines(origin);
@@ -50,21 +61,16 @@ namespace Minesweeper.Domain
             {
                 CellAt(origin).State = CellState.Revealed;
                 revealed.Add(origin);
-                Status = GameStatus.Lost;
-                return revealed;
+                return new RevealResult(revealed, hitMine: true, cleared: false);
             }
 
             Flood(origin, revealed);
-
-            if (safeRevealed == safeTotal)
-                Status = GameStatus.Won;
-
-            return revealed;
+            return new RevealResult(revealed, hitMine: false, cleared: safeRevealed == safeTotal);
         }
 
         public void ToggleFlag(Coordinate c)
         {
-            if (Status != GameStatus.InProgress || !InBounds(c))
+            if (!InBounds(c))
                 return;
 
             var cell = CellAt(c);
@@ -99,7 +105,6 @@ namespace Minesweeper.Domain
             minesPlaced = true;
         }
 
-        // Iterative flood fill: opens the origin and cascades through 0-adjacent neighbours.
         private void Flood(Coordinate origin, List<Coordinate> revealed)
         {
             var stack = new Stack<Coordinate>();

@@ -9,6 +9,7 @@ namespace Minesweeper.Domain
 
         public RandomMinePlacer(IRandom random) => this.random = random;
 
+        // Picks distinct cells uniformly via a partial Fisher-Yates shuffle, never the safe cell.
         public IReadOnlyCollection<Coordinate> Place(int width, int height, int mineCount, Coordinate safe)
         {
             var candidates = new List<Coordinate>(width * height);
@@ -22,7 +23,6 @@ namespace Minesweeper.Domain
 
             mineCount = Math.Min(mineCount, candidates.Count);
 
-            // Partial Fisher-Yates: shuffle the first mineCount slots and take them.
             var mines = new HashSet<Coordinate>(mineCount);
             for (int i = 0; i < mineCount; i++)
             {
