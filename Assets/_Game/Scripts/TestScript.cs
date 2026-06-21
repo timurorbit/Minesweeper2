@@ -16,6 +16,6 @@ public class TestScript : MonoBehaviour
 
     void OnGUI()
     {
-        
+        Debug.Log("Hello World");
     }
 }
