@@ -49,11 +49,12 @@ namespace Minesweeper.Tests
         }
 
         [Test]
-        public void RevealingAllSafeCells_ReportsCleared()
+        public void RevealingMine_RevealsEveryMine()
         {
-            var board = BoardWithMineAtOrigin();
-            var result = board.Reveal(new Coordinate(2, 2));
-            Assert.IsTrue(result.Cleared);
+            var board = new Board(3, 3, 2, new FixedMinePlacer(new Coordinate(0, 0), new Coordinate(2, 2)));
+            board.Reveal(new Coordinate(0, 0));
+
+            Assert.AreEqual(CellState.Revealed, board.CellAt(new Coordinate(2, 2)).State);
         }
 
         [Test]
@@ -91,6 +92,39 @@ namespace Minesweeper.Tests
             Assert.AreEqual(CellState.Flagged, board.CellAt(c).State);
             board.ToggleFlag(c);
             Assert.AreEqual(CellState.Hidden, board.CellAt(c).State);
+        }
+
+        [Test]
+        public void IsSolved_IsFalseBeforeAnyReveal()
+        {
+            var board = BoardWithMineAtOrigin();
+            Assert.IsFalse(board.IsSolved());
+        }
+
+        [Test]
+        public void IsSolved_IsFalseWhenAllSafeRevealedButMineNotFlagged()
+        {
+            var board = BoardWithMineAtOrigin();
+            board.Reveal(new Coordinate(2, 2));
+            Assert.IsFalse(board.IsSolved());
+        }
+
+        [Test]
+        public void IsSolved_IsTrueWhenAllSafeRevealedAndMineFlagged()
+        {
+            var board = BoardWithMineAtOrigin();
+            board.Reveal(new Coordinate(2, 2));
+            board.ToggleFlag(new Coordinate(0, 0));
+            Assert.IsTrue(board.IsSolved());
+        }
+
+        [Test]
+        public void IsSolved_IsFalseWhenSafeCellsStillHidden()
+        {
+            var board = BoardWithMineAtOrigin();
+            board.Reveal(new Coordinate(1, 0));
+            board.ToggleFlag(new Coordinate(0, 0));
+            Assert.IsFalse(board.IsSolved());
         }
     }
 }

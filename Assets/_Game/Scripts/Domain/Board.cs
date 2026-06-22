@@ -8,8 +8,6 @@ namespace Minesweeper.Domain
         private readonly int mineCount;
         private readonly IMinePlacer minePlacer;
         private bool minesPlaced;
-        private int safeRevealed;
-        private int safeTotal;
 
         public int Width { get; }
         public int Height { get; }
@@ -31,7 +29,6 @@ namespace Minesweeper.Domain
 
         public bool InBounds(Coordinate c) => c.X >= 0 && c.X < Width && c.Y >= 0 && c.Y < Height;
 
-        /// <summary>Returns the board to a fresh, unrevealed state (mines re-placed on the next reveal).</summary>
         public void Reset()
         {
             for (int y = 0; y < Height; y++)
@@ -43,29 +40,26 @@ namespace Minesweeper.Domain
                 cell.State = CellState.Hidden;
             }
             minesPlaced = false;
-            safeRevealed = 0;
-            safeTotal = 0;
         }
 
-        /// <summary>Reveals a cell (placing mines on the first reveal) and reports what happened.</summary>
+        /// <summary>Reveals a cell (placing mines on the first reveal); a mine hit reveals every mine.</summary>
         public RevealResult Reveal(Coordinate origin)
         {
             var revealed = new List<Coordinate>();
             if (!InBounds(origin) || CellAt(origin).State != CellState.Hidden)
-                return new RevealResult(revealed, hitMine: false, cleared: false);
+                return new RevealResult(revealed, hitMine: false);
 
             if (!minesPlaced)
                 PlaceMines(origin);
 
             if (CellAt(origin).IsMine)
             {
-                CellAt(origin).State = CellState.Revealed;
-                revealed.Add(origin);
-                return new RevealResult(revealed, hitMine: true, cleared: false);
+                RevealAllMines(revealed);
+                return new RevealResult(revealed, hitMine: true);
             }
 
             Flood(origin, revealed);
-            return new RevealResult(revealed, hitMine: false, cleared: safeRevealed == safeTotal);
+            return new RevealResult(revealed, hitMine: false);
         }
 
         public void ToggleFlag(Coordinate c)
@@ -80,18 +74,29 @@ namespace Minesweeper.Domain
                 cell.State = CellState.Hidden;
         }
 
+        /// <summary>True once mines are placed and every mine is flagged while every safe cell is revealed.</summary>
+        public bool IsSolved()
+        {
+            if (!minesPlaced)
+                return false;
+
+            for (int y = 0; y < Height; y++)
+            for (int x = 0; x < Width; x++)
+            {
+                var cell = cells[x, y];
+                bool satisfied = cell.IsMine
+                    ? cell.State == CellState.Flagged
+                    : cell.State == CellState.Revealed;
+                if (!satisfied)
+                    return false;
+            }
+            return true;
+        }
+
         private void PlaceMines(Coordinate safe)
         {
-            int placed = 0;
             foreach (var mine in minePlacer.Place(Width, Height, mineCount, safe))
-            {
-                var cell = CellAt(mine);
-                if (!cell.IsMine)
-                {
-                    cell.IsMine = true;
-                    placed++;
-                }
-            }
+                CellAt(mine).IsMine = true;
 
             for (int y = 0; y < Height; y++)
             for (int x = 0; x < Width; x++)
@@ -101,8 +106,22 @@ namespace Minesweeper.Domain
                     CellAt(c).AdjacentMines = CountAdjacentMines(c);
             }
 
-            safeTotal = (Width * Height) - placed;
             minesPlaced = true;
+        }
+
+        private void RevealAllMines(List<Coordinate> revealed)
+        {
+            for (int y = 0; y < Height; y++)
+            for (int x = 0; x < Width; x++)
+            {
+                var c = new Coordinate(x, y);
+                var cell = CellAt(c);
+                if (cell.IsMine && cell.State == CellState.Hidden)
+                {
+                    cell.State = CellState.Revealed;
+                    revealed.Add(c);
+                }
+            }
         }
 
         private void Flood(Coordinate origin, List<Coordinate> revealed)
@@ -118,7 +137,6 @@ namespace Minesweeper.Domain
 
                 cell.State = CellState.Revealed;
                 revealed.Add(c);
-                safeRevealed++;
 
                 if (cell.AdjacentMines == 0)
                     foreach (var n in Neighbors(c))

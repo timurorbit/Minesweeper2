@@ -6,6 +6,7 @@ namespace Minesweeper.Domain
     /// <summary>
     /// Orchestrates one playthrough over a <see cref="Board"/>: owns status + timer, exposes
     /// reveal/flag/pause/restart, and raises events the presentation layer subscribes to.
+    /// Win = every mine flagged and every safe cell revealed; loss = a revealed mine.
     /// Pure C# (no SignalBus) — the timer is advanced from Unity via <see cref="Tick"/>.
     /// </summary>
     public sealed class GameSession
@@ -43,15 +44,9 @@ namespace Minesweeper.Domain
                 CellsChanged?.Invoke(result.Revealed);
 
             if (result.HitMine)
-                Status = GameStatus.Lost;
-            else if (result.Cleared)
-                Status = GameStatus.Won;
-
-            if (Status != GameStatus.InProgress)
-            {
-                timerRunning = false;
-                Ended?.Invoke(Status);
-            }
+                End(GameStatus.Lost);
+            else if (board.IsSolved())
+                End(GameStatus.Won);
         }
 
         public void ToggleFlag(Coordinate c)
@@ -61,6 +56,9 @@ namespace Minesweeper.Domain
 
             board.ToggleFlag(c);
             CellsChanged?.Invoke(new[] { c });
+
+            if (board.IsSolved())
+                End(GameStatus.Won);
         }
 
         public void Pause()
@@ -97,6 +95,13 @@ namespace Minesweeper.Domain
                 return;
             ElapsedSeconds += deltaSeconds;
             TimeChanged?.Invoke(ElapsedSeconds);
+        }
+
+        private void End(GameStatus status)
+        {
+            Status = status;
+            timerRunning = false;
+            Ended?.Invoke(status);
         }
     }
 }

@@ -69,14 +69,38 @@ namespace Minesweeper.Tests
         }
 
         [Test]
-        public void RevealingAllSafeCells_RaisesEndedWon()
+        public void SolvedByFlaggingLastMine_RaisesEndedWon()
         {
             var session = Session();
             GameStatus? ended = null;
             session.Ended += s => ended = s;
 
             session.Reveal(new Coordinate(2, 2));
+            session.ToggleFlag(new Coordinate(0, 0));
+
             Assert.AreEqual(GameStatus.Won, ended);
+        }
+
+        [Test]
+        public void SolvedByRevealingLastSafeCell_RaisesEndedWon()
+        {
+            var session = Session();
+            GameStatus? ended = null;
+            session.Ended += s => ended = s;
+
+            session.Reveal(new Coordinate(1, 0));
+            session.ToggleFlag(new Coordinate(0, 0));
+            session.Reveal(new Coordinate(2, 2));
+
+            Assert.AreEqual(GameStatus.Won, ended);
+        }
+
+        [Test]
+        public void RevealingAllSafe_WithoutFlaggingMine_DoesNotWin()
+        {
+            var session = Session();
+            session.Reveal(new Coordinate(2, 2));
+            Assert.AreEqual(GameStatus.InProgress, session.Status);
         }
 
         [Test]

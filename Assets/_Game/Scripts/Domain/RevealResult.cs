@@ -2,18 +2,16 @@ using System.Collections.Generic;
 
 namespace Minesweeper.Domain
 {
-    /// <summary>Outcome of a single <see cref="Board.Reveal"/>: the cells opened and what they mean.</summary>
+    /// <summary>Outcome of a single <see cref="Board.Reveal"/>: the cells opened and whether a mine was hit.</summary>
     public readonly struct RevealResult
     {
         public IReadOnlyList<Coordinate> Revealed { get; }
         public bool HitMine { get; }
-        public bool Cleared { get; }
 
-        public RevealResult(IReadOnlyList<Coordinate> revealed, bool hitMine, bool cleared)
+        public RevealResult(IReadOnlyList<Coordinate> revealed, bool hitMine)
         {
             Revealed = revealed;
             HitMine = hitMine;
-            Cleared = cleared;
         }
     }
 }
