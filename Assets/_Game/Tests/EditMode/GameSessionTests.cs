@@ -7,7 +7,7 @@ namespace Minesweeper.Tests
     {
         // 3x3 session with a single mine at (0,0).
         private static GameSession Session()
-            => new GameSession(new Board(3, 3, 1, new FixedMinePlacer(new Coordinate(0, 0))));
+            => new GameSession(() => new Board(3, 3, 1, new FixedMinePlacer(new Coordinate(0, 0))));
 
         [Test]
         public void Timer_DoesNotRunBeforeFirstReveal()
@@ -78,6 +78,14 @@ namespace Minesweeper.Tests
             session.Reveal(new Coordinate(2, 2));
 
             Assert.AreEqual(GameStatus.Won, ended);
+        }
+
+        [Test]
+        public void Winning_RevealsAllMines()
+        {
+            var session = Session();
+            session.Reveal(new Coordinate(2, 2));
+            Assert.AreEqual(CellState.Revealed, session.Board.CellAt(new Coordinate(0, 0)).State);
         }
 
         [Test]
