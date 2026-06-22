@@ -41,6 +41,9 @@
 # Jetbrains Rider IDE config folder (per-user, any location)
 .idea/
 
+# macOS folder metadata
+.DS_Store
+
 # Visual Studio cache directory
 .vs/
 
