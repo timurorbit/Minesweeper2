@@ -1,16 +1,18 @@
 using System;
 using Minesweeper.Domain;
 using UnityEngine;
+using UnityEngine.UI;
 
 namespace Minesweeper.Presentation
 {
     public sealed class BoardView : MonoBehaviour
     {
-        [SerializeField] private RectTransform gridRoot;
+        [SerializeField] private RectTransform gridRoot;     // cells parent + ScrollRect content (the background)
+        [SerializeField] private RectTransform scrollArea;   // visible window; clamped to maxViewportSize
         [SerializeField] private CellView cellPrefab;
         [SerializeField] private CellSpriteSet sprites;
-        [SerializeField] private float cellSize = 48f;
-        [SerializeField, Range(0.5f, 1f)] private float fitPadding = 0.95f;
+        [SerializeField] private float cellSize = 20f;
+        [SerializeField] private float maxViewportSize = 400f;
 
         private CellView[,] cells;
         private Board board;
@@ -22,7 +24,7 @@ namespace Minesweeper.Presentation
         {
             this.board = board;
             CreateCells();
-            FitGrid();
+            LayoutBoard();
             RenderAll();
         }
 
@@ -59,26 +61,32 @@ namespace Minesweeper.Presentation
         private void Place(CellView cell, Coordinate c)
         {
             var rect = (RectTransform)cell.transform;
-            var center = new Vector2(0.5f, 0.5f);
-            rect.anchorMin = center;
-            rect.anchorMax = center;
-            rect.pivot = center;
+            var topLeft = new Vector2(0f, 1f);
+            rect.anchorMin = topLeft;
+            rect.anchorMax = topLeft;
+            rect.pivot = topLeft;
             rect.sizeDelta = new Vector2(cellSize, cellSize);
-
-            float originX = -(board.Width - 1) * cellSize * 0.5f;
-            float originY = (board.Height - 1) * cellSize * 0.5f;
-            rect.anchoredPosition = new Vector2(originX + c.X * cellSize, originY - c.Y * cellSize);
+            rect.anchoredPosition = new Vector2(c.X * cellSize, -c.Y * cellSize);
         }
 
-        private void FitGrid()
+        private void LayoutBoard()
         {
             float gridWidth = board.Width * cellSize;
             float gridHeight = board.Height * cellSize;
             gridRoot.sizeDelta = new Vector2(gridWidth, gridHeight);
 
-            Vector2 area = ((RectTransform)gridRoot.parent).rect.size;
-            float scale = Mathf.Min(area.x / gridWidth, area.y / gridHeight) * fitPadding;
-            gridRoot.localScale = new Vector3(scale, scale, 1f);
+            if (scrollArea == null)
+                return;
+
+            scrollArea.sizeDelta = new Vector2(
+                Mathf.Min(gridWidth, maxViewportSize),
+                Mathf.Min(gridHeight, maxViewportSize));
+
+            if (scrollArea.TryGetComponent(out ScrollRect scroll))
+            {
+                scroll.horizontal = gridWidth > maxViewportSize;
+                scroll.vertical = gridHeight > maxViewportSize;
+            }
         }
 
         private void RaiseLeft(Coordinate c) => CellLeftClicked?.Invoke(c);

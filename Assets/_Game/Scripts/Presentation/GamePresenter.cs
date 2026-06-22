@@ -11,16 +11,14 @@ namespace Minesweeper.Presentation
         private readonly GameSession session;
         private readonly BoardView boardView;
         private readonly HudView hudView;
-        private readonly GameInput input;
 
         private Coordinate lastRevealed;
 
-        public GamePresenter(GameSession session, BoardView boardView, HudView hudView, GameInput input)
+        public GamePresenter(GameSession session, BoardView boardView, HudView hudView)
         {
             this.session = session;
             this.boardView = boardView;
             this.hudView = hudView;
-            this.input = input;
         }
 
         public void Start()
@@ -28,7 +26,6 @@ namespace Minesweeper.Presentation
             boardView.Build(session.Board);
             boardView.CellLeftClicked += OnCellRevealed;
             boardView.CellRightClicked += session.ToggleFlag;
-            input.RestartRequested += session.Restart;
 
             session.CellsChanged += OnCellsChanged;
             session.TimeChanged += hudView.SetTime;
@@ -44,7 +41,6 @@ namespace Minesweeper.Presentation
         {
             boardView.CellLeftClicked -= OnCellRevealed;
             boardView.CellRightClicked -= session.ToggleFlag;
-            input.RestartRequested -= session.Restart;
 
             session.CellsChanged -= OnCellsChanged;
             session.TimeChanged -= hudView.SetTime;
@@ -68,7 +64,6 @@ namespace Minesweeper.Presentation
         {
             if (status == GameStatus.Lost)
                 boardView.RenderExploded(lastRevealed);
-            hudView.SetStatus(status == GameStatus.Won ? "You win!" : "Game over");
         }
 
         private void OnRestarted()

@@ -12,6 +12,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 92ba502b046e84080863e3d33fbcba9f, type: 3}
   m_Name: GameConfig
   m_EditorClassIdentifier: Assembly-CSharp::Minesweeper.Presentation.Config.GameConfig
-  width: 25
-  height: 25
+  width: 20
+  height: 20
   mineCount: 3
