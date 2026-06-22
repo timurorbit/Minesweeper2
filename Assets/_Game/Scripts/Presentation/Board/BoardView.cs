@@ -10,6 +10,7 @@ namespace Minesweeper.Presentation
         [SerializeField] private CellView cellPrefab;
         [SerializeField] private CellSpriteSet sprites;
         [SerializeField] private float cellSize = 48f;
+        [SerializeField, Range(0.5f, 1f)] private float fitPadding = 0.95f;
 
         private CellView[,] cells;
         private Board board;
@@ -21,6 +22,7 @@ namespace Minesweeper.Presentation
         {
             this.board = board;
             CreateCells();
+            FitGrid();
             RenderAll();
         }
 
@@ -55,8 +57,26 @@ namespace Minesweeper.Presentation
         private void Place(CellView cell, Coordinate c)
         {
             var rect = (RectTransform)cell.transform;
+            var center = new Vector2(0.5f, 0.5f);
+            rect.anchorMin = center;
+            rect.anchorMax = center;
+            rect.pivot = center;
             rect.sizeDelta = new Vector2(cellSize, cellSize);
-            rect.anchoredPosition = new Vector2(c.X * cellSize, -c.Y * cellSize);
+
+            float originX = -(board.Width - 1) * cellSize * 0.5f;
+            float originY = (board.Height - 1) * cellSize * 0.5f;
+            rect.anchoredPosition = new Vector2(originX + c.X * cellSize, originY - c.Y * cellSize);
+        }
+
+        private void FitGrid()
+        {
+            float gridWidth = board.Width * cellSize;
+            float gridHeight = board.Height * cellSize;
+            gridRoot.sizeDelta = new Vector2(gridWidth, gridHeight);
+
+            Vector2 area = ((RectTransform)gridRoot.parent).rect.size;
+            float scale = Mathf.Min(area.x / gridWidth, area.y / gridHeight) * fitPadding;
+            gridRoot.localScale = new Vector3(scale, scale, 1f);
         }
 
         private void RaiseLeft(Coordinate c) => CellLeftClicked?.Invoke(c);
