@@ -56,9 +56,6 @@ namespace Minesweeper.Domain
 
             board.ToggleFlag(c);
             CellsChanged?.Invoke(new[] { c });
-
-            if (board.IsSolved())
-                End(GameStatus.Won);
         }
 
         public void Pause()

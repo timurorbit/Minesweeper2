@@ -102,19 +102,10 @@ namespace Minesweeper.Tests
         }
 
         [Test]
-        public void IsSolved_IsFalseWhenAllSafeRevealedButMineNotFlagged()
+        public void IsSolved_IsTrueWhenAllSafeCellsRevealed()
         {
             var board = BoardWithMineAtOrigin();
             board.Reveal(new Coordinate(2, 2));
-            Assert.IsFalse(board.IsSolved());
-        }
-
-        [Test]
-        public void IsSolved_IsTrueWhenAllSafeRevealedAndMineFlagged()
-        {
-            var board = BoardWithMineAtOrigin();
-            board.Reveal(new Coordinate(2, 2));
-            board.ToggleFlag(new Coordinate(0, 0));
             Assert.IsTrue(board.IsSolved());
         }
 
@@ -123,7 +114,6 @@ namespace Minesweeper.Tests
         {
             var board = BoardWithMineAtOrigin();
             board.Reveal(new Coordinate(1, 0));
-            board.ToggleFlag(new Coordinate(0, 0));
             Assert.IsFalse(board.IsSolved());
         }
     }

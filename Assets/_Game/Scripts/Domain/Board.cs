@@ -74,7 +74,7 @@ namespace Minesweeper.Domain
                 cell.State = CellState.Hidden;
         }
 
-        /// <summary>True once mines are placed and every mine is flagged while every safe cell is revealed.</summary>
+        /// <summary>True once mines are placed and every safe cell is revealed (only mines remain unopened).</summary>
         public bool IsSolved()
         {
             if (!minesPlaced)
@@ -84,10 +84,7 @@ namespace Minesweeper.Domain
             for (int x = 0; x < Width; x++)
             {
                 var cell = cells[x, y];
-                bool satisfied = cell.IsMine
-                    ? cell.State == CellState.Flagged
-                    : cell.State == CellState.Revealed;
-                if (!satisfied)
+                if (!cell.IsMine && cell.State != CellState.Revealed)
                     return false;
             }
             return true;
