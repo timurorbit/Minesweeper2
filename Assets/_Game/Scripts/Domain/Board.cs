@@ -29,19 +29,6 @@ namespace Minesweeper.Domain
 
         public bool InBounds(Coordinate c) => c.X >= 0 && c.X < Width && c.Y >= 0 && c.Y < Height;
 
-        public void Reset()
-        {
-            for (int y = 0; y < Height; y++)
-            for (int x = 0; x < Width; x++)
-            {
-                var cell = cells[x, y];
-                cell.IsMine = false;
-                cell.AdjacentMines = 0;
-                cell.State = CellState.Hidden;
-            }
-            minesPlaced = false;
-        }
-
         /// <summary>Reveals a cell (placing mines on the first reveal); a mine hit reveals every mine.</summary>
         public RevealResult Reveal(Coordinate origin)
         {
@@ -53,10 +40,7 @@ namespace Minesweeper.Domain
                 PlaceMines(origin);
 
             if (CellAt(origin).IsMine)
-            {
-                RevealAllMines(revealed);
-                return new RevealResult(revealed, hitMine: true);
-            }
+                return new RevealResult(RevealAllMines(), hitMine: true);
 
             Flood(origin, revealed);
             return new RevealResult(revealed, hitMine: false);
@@ -106,8 +90,9 @@ namespace Minesweeper.Domain
             minesPlaced = true;
         }
 
-        private void RevealAllMines(List<Coordinate> revealed)
+        public IReadOnlyList<Coordinate> RevealAllMines()
         {
+            var revealed = new List<Coordinate>();
             for (int y = 0; y < Height; y++)
             for (int x = 0; x < Width; x++)
             {
@@ -119,6 +104,7 @@ namespace Minesweeper.Domain
                     revealed.Add(c);
                 }
             }
+            return revealed;
         }
 
         private void Flood(Coordinate origin, List<Coordinate> revealed)

@@ -11,7 +11,8 @@ namespace Minesweeper.Domain
     /// </summary>
     public sealed class GameSession
     {
-        private readonly Board board;
+        private readonly Func<Board> createBoard;
+        private Board board;
 
         private bool hasStarted;
         private bool timerRunning;
@@ -26,7 +27,11 @@ namespace Minesweeper.Domain
         public event Action<GameStatus> Ended;
         public event Action Restarted;
 
-        public GameSession(Board board) => this.board = board;
+        public GameSession(Func<Board> createBoard)
+        {
+            this.createBoard = createBoard;
+            board = createBoard();
+        }
 
         public void Reveal(Coordinate c)
         {
@@ -44,9 +49,16 @@ namespace Minesweeper.Domain
                 CellsChanged?.Invoke(result.Revealed);
 
             if (result.HitMine)
+            {
                 End(GameStatus.Lost);
+            }
             else if (board.IsSolved())
+            {
+                var mines = board.RevealAllMines();
+                if (mines.Count > 0)
+                    CellsChanged?.Invoke(mines);
                 End(GameStatus.Won);
+            }
         }
 
         public void ToggleFlag(Coordinate c)
@@ -77,7 +89,7 @@ namespace Minesweeper.Domain
 
         public void Restart()
         {
-            board.Reset();
+            board = createBoard();
             Status = GameStatus.InProgress;
             ElapsedSeconds = 0f;
             hasStarted = false;

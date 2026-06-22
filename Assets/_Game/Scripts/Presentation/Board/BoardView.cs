@@ -41,8 +41,12 @@ namespace Minesweeper.Presentation
 
         private void CreateCells()
         {
-            if (cells != null)
+            if (cells != null && cells.GetLength(0) == board.Width && cells.GetLength(1) == board.Height)
                 return;
+
+            if (cells != null)
+                foreach (var existing in cells)
+                    Destroy(existing.gameObject);
 
             cells = new CellView[board.Width, board.Height];
             for (int y = 0; y < board.Height; y++)

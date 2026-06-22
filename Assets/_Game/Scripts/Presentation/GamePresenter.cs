@@ -68,7 +68,7 @@ namespace Minesweeper.Presentation
 
         private void OnRestarted()
         {
-            boardView.RenderAll();
+            boardView.Build(session.Board);
             hudView.Clear();
         }
     }
