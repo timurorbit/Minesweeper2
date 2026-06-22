@@ -35,6 +35,8 @@ namespace Minesweeper.Presentation
 
         public void RenderCell(Coordinate c) => cells[c.X, c.Y].Render(sprites.SpriteFor(board.CellAt(c)));
 
+        public void RenderExploded(Coordinate c) => cells[c.X, c.Y].Render(sprites.Exploded);
+
         private void CreateCells()
         {
             if (cells != null)

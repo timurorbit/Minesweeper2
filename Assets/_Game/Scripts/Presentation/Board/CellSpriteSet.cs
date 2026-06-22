@@ -9,7 +9,10 @@ namespace Minesweeper.Presentation
         [SerializeField] private Sprite hidden;
         [SerializeField] private Sprite flagged;
         [SerializeField] private Sprite mine;
+        [SerializeField] private Sprite exploded; // the mine the player clicked
         [SerializeField] private Sprite[] numbers; // index = adjacent mine count (0..8)
+
+        public Sprite Exploded => exploded;
 
         public Sprite SpriteFor(Cell cell)
         {
@@ -17,7 +20,9 @@ namespace Minesweeper.Presentation
                 return hidden;
             if (cell.State == CellState.Flagged)
                 return flagged;
-            return cell.IsMine ? mine : numbers[cell.AdjacentMines];
+            if (cell.IsMine)
+                return mine;
+            return numbers[cell.AdjacentMines];
         }
     }
 }
