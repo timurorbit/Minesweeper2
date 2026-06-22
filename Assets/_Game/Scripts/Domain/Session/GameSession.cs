@@ -9,7 +9,7 @@ namespace Minesweeper.Domain
     /// Win = every mine flagged and every safe cell revealed; loss = a revealed mine.
     /// Pure C# (no SignalBus) — the timer is advanced from Unity via <see cref="Tick"/>.
     /// </summary>
-    public sealed class GameSession
+    public sealed class GameSession : IGameSession
     {
         private readonly Func<Board> createBoard;
         private Board board;
@@ -17,7 +17,7 @@ namespace Minesweeper.Domain
         private bool hasStarted;
         private bool timerRunning;
 
-        public Board Board => board;
+        public IBoard Board => board;
         public GameStatus Status { get; private set; } = GameStatus.InProgress;
         public float ElapsedSeconds { get; private set; }
         public bool IsPaused { get; private set; }

@@ -2,7 +2,7 @@ using System.Collections.Generic;
 
 namespace Minesweeper.Domain
 {
-    public sealed class Board
+    public sealed class Board : IBoard
     {
         private readonly Cell[,] cells;
         private readonly int mineCount;

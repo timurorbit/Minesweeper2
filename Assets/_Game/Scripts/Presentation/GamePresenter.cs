@@ -8,13 +8,13 @@ namespace Minesweeper.Presentation
 {
     public sealed class GamePresenter : IStartable, ITickable, IDisposable
     {
-        private readonly GameSession session;
+        private readonly IGameSession session;
         private readonly BoardView boardView;
         private readonly HudView hudView;
 
         private Coordinate lastRevealed;
 
-        public GamePresenter(GameSession session, BoardView boardView, HudView hudView)
+        public GamePresenter(IGameSession session, BoardView boardView, HudView hudView)
         {
             this.session = session;
             this.boardView = boardView;

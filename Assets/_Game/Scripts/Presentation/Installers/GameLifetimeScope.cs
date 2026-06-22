@@ -21,7 +21,7 @@ namespace Minesweeper.Presentation
             builder.RegisterInstance(config);
             builder.Register<IRandom>(_ => new SystemRandom(), Lifetime.Singleton);
             builder.Register<IMinePlacer, RandomMinePlacer>(Lifetime.Singleton);
-            builder.Register(c =>
+            builder.Register<IGameSession>(c =>
             {
                 var placer = c.Resolve<IMinePlacer>();
                 return new GameSession(() => new Board(config.Width, config.Height, config.MineCount, placer));

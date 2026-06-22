@@ -8,7 +8,7 @@ namespace Minesweeper.Presentation
 
     public sealed class GameFlow : IStartable, IDisposable
     {
-        private readonly GameSession session;
+        private readonly IGameSession session;
         private readonly MainMenuView mainMenu;
         private readonly PauseView pause;
         private readonly GameOverView gameOver;
@@ -17,7 +17,7 @@ namespace Minesweeper.Presentation
 
         private GameState state;
 
-        public GameFlow(GameSession session, MainMenuView mainMenu, PauseView pause,
+        public GameFlow(IGameSession session, MainMenuView mainMenu, PauseView pause,
                         GameOverView gameOver, HudView hud, GameInput input)
         {
             this.session = session;

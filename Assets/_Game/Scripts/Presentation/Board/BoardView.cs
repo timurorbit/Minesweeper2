@@ -15,12 +15,12 @@ namespace Minesweeper.Presentation
         [SerializeField] private float maxViewportSize = 400f;
 
         private CellView[,] cells;
-        private Board board;
+        private IBoard board;
 
         public event Action<Coordinate> CellLeftClicked;
         public event Action<Coordinate> CellRightClicked;
 
-        public void Build(Board board)
+        public void Build(IBoard board)
         {
             this.board = board;
             CreateCells();
