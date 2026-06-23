@@ -8,6 +8,8 @@ namespace Minesweeper.Presentation.Config
     [CreateAssetMenu(fileName = "GameConfig", menuName = "Minesweeper/Game Config")]
     public sealed class GameConfig : ScriptableObject
     {
+        private const int MaxSize = 100;
+
         [SerializeField, Min(2)] private int width = 9;
         [SerializeField, Min(2)] private int height = 9;
         [SerializeField, Min(1)] private int mineCount = 10;
@@ -21,8 +23,8 @@ namespace Minesweeper.Presentation.Config
 
         private void OnValidate()
         {
-            width = Mathf.Max(2, width);
-            height = Mathf.Max(2, height);
+            width = Mathf.Clamp(width, 2, MaxSize);
+            height = Mathf.Clamp(height, 2, MaxSize);
             mineCount = Mathf.Clamp(mineCount, 1, MaxMines);
         }
     }
